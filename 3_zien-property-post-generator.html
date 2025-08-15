@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zien Property Post Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 80vh;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9ff;
+        }
+
+        .preview-section {
+            flex: 1;
+            padding: 30px;
+            background: white;
+            border-left: 3px solid #e0e7ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95em;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .property-type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .property-type-option {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .property-type-option:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .property-type-option.active {
+            border-color: #3b82f6;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .dynamic-fields {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .preview-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preview-content {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 25px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            border: 2px solid #e5e7eb;
+            min-height: 500px;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .missing-data {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .missing-data h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .missing-data ul {
+            color: #78350f;
+            padding-left: 20px;
+        }
+
+        .missing-data li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+            
+            .property-type-selector {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .emoji {
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.postimg.cc/8PBD8MtN/Logo-Zien-Blue.png" alt="Zien Property Logo" style="max-height: 80px; margin-bottom: 10px;"> 
+        <h1>🏠 Zien Property Post Generator</h1>
+        <p>เครื่องมือสร้างโพสต์อสังหาฯ อย่างเซียน</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <div class="section-title">📝 กรอกข้อมูลทรัพย์สิน</div>
+                
+                <div class="form-group">
+                    <label>ประเภททรัพย์สิน</label>
+                    <div class="property-type-selector">
+                        <div class="property-type-option" data-type="land">ที่ดินเปล่า</div>
+                        <div class="property-type-option" data-type="land-building">ที่ดิน+สิ่งปลูกสร้าง</div>
+                        <div class="property-type-option" data-type="house">บ้านเดี่ยว</div>
+                        <div class="property-type-option" data-type="townhouse">ทาวน์เฮาส์</div>
+                        <div class="property-type-option" data-type="condo">คอนโดมิเนียม</div>
+                        <div class="property-type-option" data-type="apartment">อพาร์ทเมนต์</div>
+                        <div class="property-type-option" data-type="hotel">โรงแรม</div>
+                        <div class="property-type-option" data-type="resort">รีสอร์ต</div>
+                        <div class="property-type-option" data-type="office">สำนักงาน</div>
+                        <div class="property-type-option" data-type="project">โครงการจัดสรร</div>
+                        <div class="property-type-option" data-type="warehouse">โกดัง</div>
+                        <div class="property-type-option" data-type="commercial">อาคารพาณิชย์</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ทำเล/ย่าน</label>
+                    <input type="text" id="location" placeholder="เช่น ประชาอุทิศ-ทุ่งครุ">
+                </div>
+
+                <div class="form-group">
+                    <label>ราคาขาย / ค่าเช่า (บาท)</label>
+                    <input type="text" id="price" placeholder="เช่น 4500000 หรือ 15000/เดือน">
+                </div>
+
+                <div class="form-group">
+                    <label>รหัสทรัพย์</label>
+                    <input type="text" id="propertyId" placeholder="เช่น ZTK001">
+                </div>
+
+                <div class="form-group">
+                    <label>ลิงก์ Google Map</label>
+                    <input type="url" id="mapLink" placeholder="https://maps.google.com/...">
+                </div>
+
+                <div class="form-group">
+                    <label>จุดเด่นพิเศษ</label>
+                    <textarea id="specialFeatures" placeholder="เช่น ใกล้สถานีรถไฟฟ้า, วิวสวย, ติดถนนใหญ่"></textarea>
+                </div>
+
+                <div class="dynamic-fields" id="dynamicFields">
+                    </div>
+
+                <button class="generate-btn" onclick="generatePost()">🚀 สร้างโพสต์</button>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-title">👀 ตัวอย่างโพสต์</div>
+                
+                <div id="missingDataAlert" class="missing-data" style="display: none;">
+                    <h3>⚠️ ข้อมูลที่ยังขาดหายไป</h3>
+                    <ul id="missingDataList"></ul>
+                </div>
+
+                <div class="preview-content" id="previewContent">
+                    กรุณาเลือกประเภททรัพย์และกรอกข้อมูลเพื่อดูตัวอย่างโพสต์...
+                </div>
+
+                <button class="copy-btn" onclick="copyToClipboard()">📋 คัดลอกโพสต์</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPropertyType = '';
+        let generatedPost = '';
+
+        // Property type configurations
+        const propertyConfigs = {
+            land: {
+                name: 'ที่ดินเปล่า',
+                fields: [
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา หรือ ไร่)', type: 'text', placeholder: '100 ตร.วา หรือ 2 ไร่ 1 งาน 50 ตร.วา' },
+                    { id: 'width', label: 'หน้ากว้าง x ลึก (เมตร)', type: 'text', placeholder: '20x50 เมตร' },
+                    { id: 'roadType', label: 'หน้าติดถนน', type: 'select', options: ['คอนกรีต', 'ลาดยาง', 'ดิน', 'อื่นๆ'] },
+                    { 
+                        id: 'landColor', 
+                        label: 'ผังสีที่ดิน', 
+                        type: 'select', 
+                        options: [
+                            { value: 'เหลือง', text: 'เหลือง - ที่อยู่อาศัยหนาแน่นน้อย' },
+                            { value: 'ส้ม', text: 'ส้ม - ที่อยู่อาศัยหนาแน่นปานกลาง' },
+                            { value: 'น้ำตาล', text: 'น้ำตาล - ที่อยู่อาศัยหนาแน่นมาก' },
+                            { value: 'แดง', text: 'แดง - พาณิชยกรรม' },
+                            { value: 'ม่วง', text: 'ม่วง - อุตสาหกรรมและคลังสินค้า' },
+                            { value: 'เม็ดมะปราง', text: 'เม็ดมะปราง - คลังสินค้า' },
+                            { value: 'ม่วงอ่อน', text: 'ม่วงอ่อน - อุตสาหกรรมเฉพาะกิจ' },
+                            { value: 'เขียว', text: 'เขียว - ชนบทและเกษตรกรรม' },
+                            { value: 'เขียวมะกอก', text: 'เขียวมะกอก - สถาบันการศึกษา' },
+                            { value: 'ขาว(ทแยงเขียว)', text: 'ขาว(ทแยงเขียว) - อนุรักษ์ชนบทฯ' },
+                            { value: 'น้ำตาลอ่อน', text: 'น้ำตาลอ่อน - อนุรักษ์ศิลปวัฒนธรรม' },
+                            { value: 'เทา', text: 'เทา - สถาบันศาสนา' },
+                            { value: 'น้ำเงิน', text: 'น้ำเงิน - สถาบันราชการ' },
+                            { value: 'ไม่ทราบ', text: 'ไม่ทราบ' }
+                        ] 
+                    },
+                    { id: 'title', label: 'เอกสารสิทธิ์', type: 'select', options: ['โฉนด', 'น.ส.3ก', 'ส.ป.ก.1', 'อื่นๆ'] },
+                    { id: 'landCondition', label: 'สภาพที่ดิน', type: 'select', options: ['ถมแล้ว', 'ยังไม่ถม', 'ถมบางส่วน'] }
+                ]
+            },
+            house: {
+                name: 'บ้านเดี่ยว',
+                fields: [
+                    { id: 'projectName', label: 'ชื่อโครงการ (ถ้ามี)', type: 'text', placeholder: 'เช่น หมู่บ้านสุขสันต์' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา)', type: 'number', placeholder: '50' },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอย (ตร.ม.)', type: 'number', placeholder: '120' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'select', options: ['1', '2', '3'] },
+                    { id: 'bedrooms', label: 'จำนวนห้องนอน', type: 'number', placeholder: '3' },
+                    { id: 'bathrooms', label: 'จำนวนห้องน้ำ', type: 'number', placeholder: '2' },
+                    { id: 'parking', label: 'ที่จอดรถ (คัน)', type: 'select', options: ['1', '2', '3+'] },
+                    { id: 'condition', label: 'สภาพบ้าน', type: 'select', options: ['ใหม่', 'มือสอง', 'ต้องรีโนเวท'] }
+                ]
+            },
+            condo: {
+                name: 'คอนโดมิเนียม',
+                fields: [
+                    { id: 'projectName', label: 'ชื่อโครงการ', type: 'text', placeholder: 'เช่น The Bangkok Sathorn' },
+                    { id: 'floor', label: 'ชั้นที่', type: 'number', placeholder: '15' },
+                    { id: 'roomSize', label: 'ขนาดห้อง (ตร.ม.)', type: 'number', placeholder: '35' },
+                    { id: 'roomType', label: 'ประเภทห้อง', type: 'select', options: ['สตูดิโอ', '1 ห้องนอน', '2 ห้องนอน', '3 ห้องนอน'] },
+                    { id: 'parking', label: 'ที่จอดรถ', type: 'select', options: ['ไม่มี', '1 คัน', '2 คัน'] },
+                    { id: 'direction', label: 'ทิศทางห้อง', type: 'select', options: ['เหนือ', 'ใต้', 'ตะวันออก', 'ตะวันตก'] },
+                    { id: 'view', label: 'วิวจากห้อง', type: 'select', options: ['เมือง', 'สวน', 'สระ', 'ถนน', 'แม่น้ำ'] },
+                    { id: 'condition', label: 'สภาพห้อง', type: 'select', options: ['ใหม่', 'มือสอง', 'ต้องรีโนเวท'] }
+                ]
+            },
+            townhouse: {
+                name: 'ทาวน์เฮาส์/ทาวน์โฮม',
+                fields: [
+                    { id: 'projectName', label: 'ชื่อโครงการ (ถ้ามี)', type: 'text', placeholder: 'เช่น หมู่บ้านสวนสยาม' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา)', type: 'number', placeholder: '20' },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอย (ตร.ม.)', type: 'number', placeholder: '120' },
+                    { id: 'unitType', label: 'ลักษณะยูนิต', type: 'select', options: ['หัวแถว', 'กลางแถว', 'ท้ายแถว'] },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'select', options: ['2', '3'] },
+                    { id: 'bedrooms', label: 'จำนวนห้องนอน', type: 'number', placeholder: '3' },
+                    { id: 'bathrooms', label: 'จำนวนห้องน้ำ', type: 'number', placeholder: '2' },
+                    { id: 'parking', label: 'ที่จอดรถ (คัน)', type: 'select', options: ['1', '2'] },
+                    { id: 'condition', label: 'สภาพบ้าน', type: 'select', options: ['ใหม่', 'มือสอง', 'ต้องรีโนเวท'] }
+                ]
+            },
+            'land-building': {
+                name: 'ที่ดินพร้อมสิ่งปลูกสร้าง',
+                fields: [
+                    { id: 'landSize', label: 'ขนาดที่ดิน', type: 'text', placeholder: '100 ตร.วา หรือ 2 ไร่' },
+                    { id: 'buildingType', label: 'ประเภทสิ่งปลูกสร้าง', type: 'select', options: ['บ้านเดี่ยว', 'อาคารพาณิชย์', 'โรงงาน', 'อื่นๆ'] },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอย (ตร.ม.)', type: 'number', placeholder: '150' },
+                    { id: 'bedrooms', label: 'จำนวนห้อง (เลือกชุด)', type: 'select', options: ['2นอน2น้ำ', '3นอน2น้ำ', '4นอน3น้ำ', 'อื่นๆ']},
+                    { id: 'buildingCondition', label: 'สภาพสิ่งปลูกสร้าง', type: 'select', options: ['พร้อมอยู่', 'ต้องรีโนเวท', 'รื้อใหม่ได้'] },
+                    { id: 'title', label: 'เอกสารสิทธิ์', type: 'select', options: ['โฉนด', 'น.ส.3ก', 'ส.ป.ก.1', 'อื่นๆ'] }
+                ]
+            },
+            apartment: {
+                name: 'อพาร์ทเมนต์/หอพัก',
+                fields: [
+                    { id: 'buildingName', label: 'ชื่ออาคาร (ถ้ามี)', type: 'text', placeholder: 'เช่น อพาร์ทเมนต์สวนสน' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา)', type: 'number', placeholder: '200' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'number', placeholder: '4' },
+                    { id: 'totalRooms', label: 'จำนวนห้องพัก', type: 'number', placeholder: '20' },
+                    { id: 'avgRoomSize', label: 'ขนาดห้องเฉลี่ย (ตร.ม.)', type: 'number', placeholder: '25' },
+                    { id: 'bathroomType', label: 'ประเภทห้องน้ำ', type: 'select', options: ['ในตัว', 'รวม', 'ผสม'] },
+                    { id: 'parking', label: 'ที่จอดรถ (จำนวนคัน)', type: 'number', placeholder: '10' },
+                    { id: 'monthlyIncome', label: 'รายได้เฉลี่ยต่อเดือน', type: 'text', placeholder: '50000' }
+                ]
+            },
+            hotel: {
+                name: 'โรงแรม/เซอร์วิสอพาร์ทเมนต์',
+                fields: [
+                    { id: 'hotelName', label: 'ชื่อโรงแรม', type: 'text', placeholder: 'เช่น โรงแรมสยามพาเลซ' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ไร่-งาน-ตร.วา)', type: 'text', placeholder: '2-1-50' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'number', placeholder: '8' },
+                    { id: 'totalRooms', label: 'จำนวนห้องพัก', type: 'number', placeholder: '50' },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอยรวม (ตร.ม.)', type: 'number', placeholder: '2000' },
+                    { id: 'license', label: 'ใบอนุญาตโรงแรม', type: 'select', options: ['มี', 'ไม่มี', 'กำลังดำเนินการ'] },
+                    { id: 'facilities', label: 'สิ่งอำนวยความสะดวก', type: 'select', options: ['ครบ', 'พื้นฐาน'] },
+                    { id: 'monthlyIncome', label: 'รายได้เฉลี่ยต่อเดือน', type: 'text', placeholder: '200000' }
+                ]
+            },
+            resort: {
+                name: 'รีสอร์ต/บ้านพักตากอากาศ',
+                fields: [
+                    { id: 'resortName', label: 'ชื่อรีสอร์ต', type: 'text', placeholder: 'เช่น รีสอร์ตบ้านสวนใส' },
+                    { id: 'landSize', label: 'ขนาดที่ดินรวม (ไร่-งาน-ตร.วา)', type: 'text', placeholder: '5-2-30' },
+                    { id: 'totalUnits', label: 'จำนวนยูนิต/หลัง', type: 'number', placeholder: '10' },
+                    { id: 'unitSize', label: 'พื้นที่ใช้สอยต่อหลัง (ตร.ม.)', type: 'number', placeholder: '60' },
+                    { id: 'accommodationType', label: 'ประเภทที่พัก', type: 'select', options: ['วิลลา', 'บังกะโล', 'ห้องพักแบบโรงแรม'] },
+                    { id: 'facilities', label: 'สิ่งอำนวยความสะดวก', type: 'textarea', placeholder: 'เช่น สระว่ายน้ำ, ห้องอาหาร, สปา' },
+                    { id: 'distanceToAttraction', label: 'ระยะห่างจากทะเล/แหล่งท่องเที่ยว', type: 'text', placeholder: 'เช่น 500 เมตรจากหาด' }
+                ]
+            },
+            office: {
+                name: 'สำนักงาน/โฮมออฟฟิศ',
+                fields: [
+                    { id: 'buildingName', label: 'ชื่ออาคาร/โครงการ', type: 'text', placeholder: 'เช่น อาคารธุรกิจสยาม' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา)', type: 'number', placeholder: '100' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'number', placeholder: '3' },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอย (ตร.ม.)', type: 'number', placeholder: '200' },
+                    { id: 'width', label: 'หน้ากว้างอาคาร (เมตร)', type: 'number', placeholder: '8' },
+                    { id: 'parking', label: 'ที่จอดรถ (จำนวนคัน)', type: 'number', placeholder: '5' },
+                    { id: 'systems', label: 'ระบบในอาคาร', type: 'select', options: ['ครบ', 'พื้นฐาน'] },
+                    { id: 'suitableFor', label: 'เหมาะสำหรับ', type: 'select', options: ['สำนักงาน', 'โฮมออฟฟิศ', 'คลินิก', 'ร้านค้า'] }
+                ]
+            },
+            project: {
+                name: 'โครงการจัดสรร',
+                fields: [
+                    { id: 'projectName', label: 'ชื่อโครงการ', type: 'text', placeholder: 'เช่น โครงการบ้านสวนแสนสุข' },
+                    { id: 'totalLandSize', label: 'ขนาดที่ดินรวม (ไร่)', type: 'number', placeholder: '20' },
+                    { id: 'projectType', label: 'ประเภทโครงการ', type: 'select', options: ['บ้านเดี่ยว', 'ทาวน์โฮม', 'ที่ดินเปล่า', 'ผสม'] },
+                    { id: 'totalUnits', label: 'จำนวนแปลง/ยูนิต', type: 'number', placeholder: '50' },
+                    { id: 'avgPlotSize', label: 'ขนาดแปลงเฉลี่ย (ตร.วา)', type: 'number', placeholder: '60' },
+                    { id: 'projectStatus', label: 'สถานะโครงการ', type: 'select', options: ['เปิดขายใหม่', 'ก่อสร้าง', 'สร้างเสร็จแล้ว'] },
+                    { id: 'internalRoad', label: 'ถนนในโครงการ', type: 'select', options: ['คอนกรีต', 'ลาดยาง'] }
+                ]
+            },
+             warehouse: {
+                name: 'โกดัง',
+                fields: [
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา / ไร่)', type: 'text', placeholder: '2 ไร่ หรือ 800 ตร.วา' },
+                    { id: 'usableArea', label: 'ขนาดพื้นที่ใช้สอย (ตร.ม.)', type: 'number', placeholder: '1500' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'select', options: ['1', '2', '3'] },
+                    { id: 'ceilingHeight', label: 'ความสูงภายในโกดัง (เมตร)', type: 'number', placeholder: '10' },
+                    { id: 'structure', label: 'โครงสร้าง', type: 'select', options: ['เหล็ก', 'คอนกรีต', 'ผสม'] },
+                    { id: 'gateSize', label: 'ประตูทางเข้า (กว้าง x สูง, เมตร)', type: 'text', placeholder: '6x5 เมตร' },
+                    { id: 'systems', label: 'ระบบภายใน', type: 'select', options: ['ไฟฟ้า 3 เฟส', 'ไฟฟ้าปกติ', 'น้ำประปา', 'อื่นๆ'] },
+                    { id: 'access', label: 'การเข้าถึง', type: 'select', options: ['ติดถนนใหญ่', 'ถนนซอย', 'ใกล้ทางด่วน', 'ใกล้ท่าเรือ', 'อื่นๆ'] },
+                    { id: 'condition', label: 'สภาพโกดัง', type: 'select', options: ['ใหม่', 'มือสอง', 'ต้องปรับปรุง'] }
+                ]
+            },
+            commercial: {
+                name: 'อาคารพาณิชย์',
+                fields: [
+                    { id: 'projectName', label: 'ชื่อโครงการ/อาคาร (ถ้ามี)', type: 'text' },
+                    { id: 'landSize', label: 'ขนาดที่ดิน (ตร.วา)', type: 'number', placeholder: '20' },
+                    { id: 'usableArea', label: 'พื้นที่ใช้สอยรวม (ตร.ม.)', type: 'number', placeholder: '180' },
+                    { id: 'floors', label: 'จำนวนชั้น', type: 'select', options: ['2', '3', '4', 'อื่นๆ'] },
+                    { id: 'width', label: 'หน้ากว้างอาคาร (เมตร)', type: 'number', placeholder: '4' },
+                    { id: 'bathrooms', label: 'จำนวนห้องน้ำ', type: 'number', placeholder: '3' },
+                    { id: 'parking', label: 'ที่จอดรถ (จำนวนคัน)', type: 'number', placeholder: '1' },
+                    { id: 'condition', label: 'สภาพอาคาร', type: 'select', options: ['ใหม่', 'มือสอง', 'ต้องรีโนเวท'] },
+                    { id: 'suitableFor', label: 'เหมาะสำหรับ', type: 'select', options: ['ร้านค้า', 'สำนักงาน', 'คลินิก', 'คาเฟ่', 'อื่นๆ'] }
+                ]
+            }
+        };
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Property type selection
+            document.querySelectorAll('.property-type-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.property-type-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedPropertyType = this.dataset.type;
+                    generateDynamicFields();
+                });
+            });
+
+            // Auto-generate preview when inputs change
+            document.addEventListener('input', debounce(generatePost, 500));
+        });
+
+        function generateDynamicFields() {
+            const container = document.getElementById('dynamicFields');
+            container.innerHTML = '';
+
+            if (!selectedPropertyType || !propertyConfigs[selectedPropertyType]) {
+                return;
+            }
+
+            const config = propertyConfigs[selectedPropertyType];
+            container.innerHTML = `<div class="section-title">📋 ข้อมูลเฉพาะ${config.name}</div>`;
+
+            config.fields.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'form-group';
+
+                let inputHTML = '';
+                if (field.type === 'select') {
+                    // Handle complex options (object with value/text) vs simple options (string array)
+                    const optionsHTML = field.options.map(opt => {
+                        if (typeof opt === 'object') {
+                            return `<option value="${opt.value}">${opt.text}</option>`;
+                        }
+                        return `<option value="${opt}">${opt}</option>`;
+                    }).join('');
+                    
+                    inputHTML = `<select id="${field.id}">
+                        <option value="">เลือก...</option>
+                        ${optionsHTML}
+                    </select>`;
+                } else if (field.type === 'textarea') {
+                    inputHTML = `<textarea id="${field.id}" placeholder="${field.placeholder || ''}"></textarea>`;
+                } else {
+                    inputHTML = `<input type="${field.type}" id="${field.id}" placeholder="${field.placeholder || ''}">`;
+                }
+
+                fieldDiv.innerHTML = `
+                    <label>${field.label}</label>
+                    ${inputHTML}
+                `;
+
+                container.appendChild(fieldDiv);
+            });
+        }
+
+        function generatePost() {
+            if (!selectedPropertyType) {
+                document.getElementById('previewContent').textContent = 'กรุณาเลือกประเภททรัพย์เพื่อเริ่มสร้างโพสต์...';
+                return;
+            }
+
+            const data = collectFormData();
+            const missingData = checkMissingData(data);
+            
+            showMissingDataAlert(missingData);
+            
+            const post = createPost(data);
+            generatedPost = post;
+            
+            document.getElementById('previewContent').innerHTML = post;
+        }
+
+        function collectFormData() {
+            const data = {
+                propertyType: selectedPropertyType,
+                location: document.getElementById('location')?.value || '',
+                price: document.getElementById('price')?.value || '',
+                propertyId: document.getElementById('propertyId')?.value || '',
+                mapLink: document.getElementById('mapLink')?.value || '',
+                specialFeatures: document.getElementById('specialFeatures')?.value || ''
+            };
+
+            // Collect dynamic fields
+            const config = propertyConfigs[selectedPropertyType];
+            if (config) {
+                config.fields.forEach(field => {
+                    const element = document.getElementById(field.id);
+                    if (element) {
+                        data[field.id] = element.value || '';
+                    }
+                });
+            }
+
+            return data;
+        }
+
+        function checkMissingData(data) {
+            const missing = [];
+            
+            if (!data.location) missing.push('ทำเล/ย่าน');
+            if (!data.price) missing.push('ราคาขาย / ค่าเช่า');
+            if (!data.mapLink) missing.push('ลิงก์ Google Map');
+            
+            const config = propertyConfigs[selectedPropertyType];
+            if (config) {
+                config.fields.forEach(field => {
+                    if (!data[field.id]) {
+                        missing.push(field.label);
+                    }
+                });
+            }
+
+            return missing;
+        }
+
+        function showMissingDataAlert(missingData) {
+            const alertDiv = document.getElementById('missingDataAlert');
+            const listDiv = document.getElementById('missingDataList');
+            
+            if (missingData.length > 0) {
+                alertDiv.style.display = 'block';
+                listDiv.innerHTML = missingData.map(item => `<li>${item}</li>`).join('');
+            } else {
+                alertDiv.style.display = 'none';
+            }
+        }
+        
+        function formatPrice(price) {
+            if (!price) return '[กรุณาใส่ราคา]';
+            if (price.toString().toLowerCase().includes('/')) {
+                return `**${price}**`; // It's a rental price like "15,000/เดือน"
+            }
+            try {
+                const numPrice = Number(price.replace(/,/g, ''));
+                return `**${numPrice.toLocaleString()}** บาท`;
+            } catch (e) {
+                return `**${price}**`; // Fallback for non-numeric values
+            }
+        }
+
+        function createPost(data) {
+            const config = propertyConfigs[selectedPropertyType];
+            const propertyName = config ? config.name : 'ทรัพย์สิน';
+            
+            let post = '';
+
+            // Catchy headline
+            const saleOrRent = data.price && data.price.includes('/') ? 'ให้เช่า' : 'ขาย';
+            if (data.location) {
+                post += `✨ <span class="highlight">${saleOrRent}ด่วน! ${propertyName} ทำเลเยี่ยมใจกลาง${data.location}</span> ✨\n\n`;
+            } else {
+                post += `✨ <span class="highlight">โอกาสทองสำหรับ${propertyName} ทำเลดี</span> ✨\n\n`;
+            }
+
+            // Property summary
+            post += createPropertySummary(data, config);
+
+            // Price
+            post += `💰 เสนอ${saleOrRent}: ${formatPrice(data.price)}\n\n`;
+            
+            // Property ID
+            const propertyId = data.propertyId || 'ZTK[ใส่เลขรหัสทรัพย์]';
+            post += `รหัสทรัพย์: **${propertyId}**\n\n`;
+
+            // Location
+            if (data.mapLink) {
+                post += `📍 ที่ตั้ง: ${data.mapLink}\n\n`;
+            } else {
+                post += `📍 ที่ตั้ง: **[กรุณาใส่ลิงค์ Google Map]**\n\n`;
+            }
+
+            // Nearby places placeholder
+            post += `สถานที่ใกล้เคียง (โดยประมาณ):\n`;
+            post += `**(กรุณาค้นหาและระบุสถานที่สำคัญอย่างน้อย 6-8 แห่ง)**\n`;
+            post += `- สถานศึกษา: [ชื่อโรงเรียน] ([ระยะทาง] กม.)\n`;
+            post += `- ห้างสรรพสินค้า/ตลาด: [ชื่อห้าง/ตลาด] ([ระยะทาง] กม.)\n`;
+            post += `- โรงพยาบาล: [ชื่อโรงพยาบาล] ([ระยะทาง] กม.)\n`;
+            post += `- การเดินทาง: [สถานี BTS/MRT] ([ระยะทาง] กม.)\n`;
+            post += `- สถานที่สำคัญ: [วัด/สถานที่ท่องเที่ยว] ([ระยะทาง] กม.)\n\n`;
+
+            // Contact info
+            post += `📞 เพื่อมอบการบริการที่ดีที่สุดและให้ข้อมูลเชิงลึกเพิ่มเติม\n\n`;
+
+            // Call to Action
+            post += createCallToAction(data);
+
+            // Hashtags
+            post += createHashtags(data, propertyName);
+
+            // Footer
+            post += createFooter();
+
+            return post;
+        }
+
+        function createPropertySummary(data, config) {
+            let summary = '';
+            const location = data.location || '[ทำเล]';
+            
+            // Default summary header
+             summary += `**${config.name} ย่าน${location}`;
+             if (data.projectName || data.hotelName || data.resortName || data.buildingName) {
+                summary += ` ${data.projectName || data.hotelName || data.resortName || data.buildingName}`;
+             }
+             summary += '**\n\n';
+
+            // Specific fields based on type
+            if (config.fields) {
+                config.fields.forEach(field => {
+                    if (data[field.id]) {
+                        // Simple emojis for better readability
+                        let emoji = '🔹';
+                        if (field.label.includes('ขนาดที่ดิน')) emoji = '🏡';
+                        if (field.label.includes('พื้นที่ใช้สอย')) emoji = '📐';
+                        if (field.label.includes('ห้อง')) emoji = '🚪';
+                        if (field.label.includes('ชั้น')) emoji = '🏢';
+                        if (field.label.includes('จอดรถ')) emoji = '🚗';
+                        if (field.label.includes('สภาพ')) emoji = '🏠';
+                        if (field.label.includes('ทิศ')) emoji = '🧭';
+                        if (field.label.includes('วิว')) emoji = '👀';
+                        if (field.label.includes('ถนน')) emoji = '🛣️';
+                        if (field.label.includes('ผังสี')) emoji = '🎨';
+                        if (field.label.includes('เอกสาร')) emoji = '📋';
+                        
+                        summary += `${emoji} ${field.label}: ${data[field.id]}\n`;
+                    }
+                });
+            }
+            
+            if (data.specialFeatures) {
+                summary += `✨ จุดเด่นพิเศษ: ${data.specialFeatures}\n`;
+            }
+            
+            summary += `\n`;
+            return summary;
+        }
+
+        function createCallToAction(data) {
+            // สร้าง Call to Action ตามสถานะทรัพย์
+            let cta = '';
+            
+            if (data.specialFeatures && (data.specialFeatures.includes('ร้อน') || data.specialFeatures.includes('หลุดจอง'))) {
+                cta = `⚡ **โอกาสสุดท้าย! ทรัพย์ร้อนแบบนี้อาจไม่รอใคร นัดชมด่วน!** ⚡\n\n`;
+            } else if (data.specialFeatures && data.specialFeatures.includes('ราคาพิเศษ')) {
+                cta = `🔥 **ราคานี้หาไม่ได้อีกแล้ว! พร้อมจบ ยินดีให้คำปรึกษาเรื่องสินเชื่อฟรี!** 🔥\n\n`;
+            } else {
+                cta = `📱 **สนใจนัดชมหรือปรึกษาเรา ติดต่อ:**\n\n`;
+            }
+            
+            return cta;
+        }
+
+        function createHashtags(data, propertyName) {
+            const location = data.location || 'ทำเลดี';
+            const cleanLocation = location.replace(/[-\s]/g, '');
+            const cleanPropertyName = propertyName.replace(/[\s/]/g, '');
+             const saleOrRent = data.price && data.price.includes('/') ? 'ให้เช่า' : 'ขาย';
+
+            
+            let hashtags = '\n';
+            hashtags += `#${saleOrRent}${cleanPropertyName}${cleanLocation} `;
+            hashtags += `#${cleanPropertyName}${cleanLocation} `;
+            
+            if (data.specialFeatures) {
+                const feature = data.specialFeatures.split(/[, ]+/)[0].replace(/[^\u0E00-\u0E7Fa-zA-Z0-9]/g, '');
+                if (feature) {
+                    hashtags += `#${cleanPropertyName}${feature} `;
+                }
+            }
+            
+            hashtags += `#${cleanLocation}${cleanPropertyName} `;
+            hashtags += `#ZienProperty #เซียนอสังหา #บริการมืออาชีพ\n\n`;
+            
+            return hashtags;
+        }
+
+        function createFooter() {
+            let footer = '';
+            
+            footer += `> เยี่ยมชมผลงานและทรัพย์อื่นๆ ของเรา:\n`;
+            footer += `> https://www.facebook.com/zionthonburi/\n\n`;
+            
+            footer += `"Zien Property ไม่เพียงแต่รับฝากขายอสังหาริมทรัพย์ทุกประเภท `;
+            footer += `แต่เราคือเพื่อนคู่คิดที่พร้อมเดินเคียงข้างคุณ ตั้งแต่การให้คำปรึกษา การประเมินราคา `;
+            footer += `การจัดหาสินเชื่อ ไปจนถึงวันโอนกรรมสิทธิ์ ด้วยบริการครบวงจร (One Stop Service) `;
+            footer += `อย่างมืออาชีพ"\n\n`;
+            
+            footer += `**"ใครๆ ก็ฝากขายกับเซียนอสังหาฯ"**`;
+            
+            return footer;
+        }
+
+        function copyToClipboard() {
+            if (!generatedPost) {
+                alert('กรุณาสร้างโพสต์ก่อนคัดลอก');
+                return;
+            }
+
+            // แปลง HTML กลับเป็น plain text สำหรับการคัดลอก
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = generatedPost;
+            const plainText = tempDiv.textContent || tempDiv.innerText || '';
+
+            navigator.clipboard.writeText(plainText).then(() => {
+                // เปลี่ยนข้อความปุ่มชั่วคราว
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ คัดลอกแล้ว!';
+                btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                }, 2000);
+            }).catch(() => {
+                alert('ไม่สามารถคัดลอกได้ กรุณาเลือกข้อความและคัดลอกด้วยตนเอง');
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
+```
